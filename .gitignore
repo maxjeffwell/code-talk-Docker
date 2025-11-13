@@ -41,3 +41,4 @@ postgres_data/
 
 # Redis data
 redis_data/
+k8s/secrets.yaml
