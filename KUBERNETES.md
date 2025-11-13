@@ -48,10 +48,10 @@ You already have these! Just use your existing connection strings:
 
 ```bash
 # Your existing Heroku PostgreSQL
-DATABASE_URL=postgres://ue2p717tmbg7uj:p5181fcc48b09e9c27b27fe64c388e33f675c42effa900b05979b61857159925d@c5cnr847jq0fj3.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/de3iq68tg4peu
+
 
 # Your existing Heroku Redis
-REDIS_URL=rediss://:p40e3d46b6655a2eada48df7a524df3ed36f490323a854685737416bbed6a99d6@ec2-35-175-134-146.compute-1.amazonaws.com:6380
+
 ```
 
 **Pros:**
@@ -66,7 +66,7 @@ REDIS_URL=rediss://:p40e3d46b6655a2eada48df7a524df3ed36f490323a854685737416bbed6
 2. Create project: "code-talk"
 3. Copy connection string:
    ```
-   postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb
+   
    ```
 4. Free tier: 512MB storage, unlimited compute
 
