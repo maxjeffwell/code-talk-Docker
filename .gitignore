@@ -42,3 +42,30 @@ postgres_data/
 # Redis data
 redis_data/
 k8s/secrets.yaml
+
+# Artiforge
+.artiforge/
+
+# Cache files
+.eslintcache
+.stylelintcache
+.cache/
+*.tsbuildinfo
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Dependency directories (in case of monorepo tools)
+.pnp.*
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
