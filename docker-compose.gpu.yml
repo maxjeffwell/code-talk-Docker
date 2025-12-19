@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # GPU-Accelerated Server Override
+  server:
+    build:
+      context: ./code-talk-graphql-server
+      dockerfile: Dockerfile.gpu
+      target: development
+    image: maxjeffwell/code-talk-graphql-server:gpu
+    container_name: code-talk-graphql-server-gpu
+    # Enable NVIDIA GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    environment:
+      NODE_ENV: development
+      PORT: 8000
+      # External Database Configuration
+      DATABASE_URL: postgres://ue2p717tmbg7uj:p5181fcc48b09e9c27b27fe64c388e33f675c42effa900b05979b61857159925d@c5cnr847jq0fj3.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/de3iq68tg4peu
+      DB_SSL: "true"
+      # External Redis Configuration
+      REDIS_URL: rediss://:p40e3d46b6655a2eada48df7a524df3ed36f490323a854685737416bbed6a99d6@ec2-18-213-231-91.compute-1.amazonaws.com:22840
+      REDIS_HOST: ec2-18-213-231-91.compute-1.amazonaws.com
+      REDIS_PORT: 22840
+      REDIS_PASSWORD: p40e3d46b6655a2eada48df7a524df3ed36f490323a854685737416bbed6a99d6
+      REDIS_TLS: "true"
+      # CORS
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5000,http://localhost:80
+    networks:
+      - code-talk-network
+
+  # React Client (Optional override if needed, mostly just to depend on new server config potentially)
+  client:
+    build:
+      context: ./code-talk-graphql-client
+      target: development
+    container_name: code-talk-graphql-client
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 5000
+      REACT_APP_GRAPHQL_HTTP_URI: ${REACT_APP_GRAPHQL_HTTP_URI:-http://localhost/graphql}
+      REACT_APP_GRAPHQL_WS_URI: ${REACT_APP_GRAPHQL_WS_URI:-ws://localhost/graphql}
+    ports:
+      - "5000:5000"
+    depends_on:
+      - server
+    networks:
+      - code-talk-network
