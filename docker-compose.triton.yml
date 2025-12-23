@@ -1,0 +1,118 @@
+version: '3.8'
+
+# GPU Deployment with Triton Inference Server
+# Usage: docker compose -f docker-compose.yml -f docker-compose.triton.yml up
+#
+# Architecture:
+#   GraphQL Server -> shared-ai-gateway -> triton-adapter -> Triton Server
+#
+# The triton-adapter translates OpenVINO API to Triton API,
+# allowing the same gateway code to work with either backend.
+
+services:
+  # Triton Inference Server - runs models on GPU
+  triton:
+    build:
+      context: ./triton-server
+      dockerfile: Dockerfile
+    image: maxjeffwell/triton-server:latest
+    container_name: code-talk-triton
+    command: >
+      tritonserver --model-repository=/models --http-port=8001 --grpc-port=8002 --metrics-port=8003 --log-verbose=1
+    environment:
+      - XDG_CACHE_HOME=/cache
+    volumes:
+      - ./models:/models:ro
+      - triton-cache:/cache
+    ports:
+      - "8001:8001" # HTTP API
+      - "8002:8002" # gRPC API (faster)
+      - "8003:8003" # Prometheus metrics
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ '1' ] # GTX 1080
+              capabilities: [ gpu ]
+    networks:
+      - code-talk-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8001/v2/health/ready" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+  # Triton Adapter - OpenVINO-compatible API wrapper
+  triton-adapter:
+    build:
+      context: ./triton-adapter
+      dockerfile: Dockerfile
+    image: maxjeffwell/triton-adapter:latest
+    container_name: code-talk-triton-adapter
+    environment:
+      PORT: "8001"
+      TRITON_URL: "triton:8001"
+      TRITON_GRPC_URL: "triton:8002"
+      USE_GRPC: "true"
+      MODEL_NAME: "tinyllama"
+    ports:
+      - "8004:8001" # Debug port
+    depends_on:
+      triton:
+        condition: service_healthy
+    networks:
+      - code-talk-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8001/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # Shared AI Gateway - routes requests from apps to inference backend
+  shared-ai-gateway:
+    build:
+      context: ../shared-ai-gateway
+      dockerfile: Dockerfile
+    image: maxjeffwell/shared-ai-gateway:latest
+    container_name: code-talk-ai-gateway
+    environment:
+      PORT: "8002"
+      # Connect to Triton adapter (same API as OpenVINO)
+      INFERENCE_URL: "http://triton-adapter:8001"
+    ports:
+      - "8005:8002" # Debug port (8002 may conflict)
+    depends_on:
+      triton-adapter:
+        condition: service_healthy
+    networks:
+      - code-talk-network
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:8002/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Override server to use Triton env vars
+  server:
+    environment:
+      TRITON_HTTP_URL: http://triton:8001
+      TRITON_GRPC_URL: triton:8002
+      AI_GATEWAY_URL: http://shared-ai-gateway:8002
+    depends_on:
+      triton:
+        condition: service_healthy
+      shared-ai-gateway:
+        condition: service_healthy
+
+networks:
+  code-talk-network:
+    driver: bridge
+
+volumes:
+  triton-cache:
