@@ -1,0 +1,7 @@
+__pycache__/
+*.gguf
+*.onnx
+*.engine
+*.timing
+*.profile
+trt_cache/

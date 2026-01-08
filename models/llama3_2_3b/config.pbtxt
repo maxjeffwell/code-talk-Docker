@@ -1,0 +1,62 @@
+name: "llama3_2_3b"
+backend: "python"
+max_batch_size: 1
+
+input [
+  {
+    name: "text_input"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  },
+  {
+    name: "max_tokens"
+    data_type: TYPE_INT32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "temperature"
+    data_type: TYPE_FP32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "top_p"
+    data_type: TYPE_FP32
+    dims: [ 1 ]
+    optional: true
+  }
+]
+
+output [
+  {
+    name: "text_output"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  }
+]
+
+# GPU instance - GTX 1080 is GPU 0 inside container
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+    gpus: [ 0 ]
+  }
+]
+
+# Parameters for model loading
+parameters [
+  {
+    key: "model_path"
+    value: { string_value: "Llama-3.2-3B-Instruct-Q4_K_M.gguf" }
+  },
+  {
+    key: "n_gpu_layers"
+    value: { string_value: "-1" }  # -1 = all layers on GPU
+  },
+  {
+    key: "n_ctx"
+    value: { string_value: "4096" }  # Context window
+  }
+]
