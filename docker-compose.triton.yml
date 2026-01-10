@@ -89,6 +89,9 @@ services:
       LOCAL_MODEL: "llama-3.2-3b-instruct"
       # Default inference URL
       INFERENCE_URL: "http://triton-adapter:8001"
+      # Lens Loop LLM Observability - traces all LLM requests via Cloudflare tunnel
+      LENS_LOOP_PROXY: "https://lens-loop.el-jefe.me"
+      LENS_LOOP_PROJECT: "lens-loop-project"
     ports:
       - "8005:8002" # Debug port (8002 may conflict)
     depends_on:
