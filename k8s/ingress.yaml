@@ -2,33 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: code-talk-ingress
-  namespace: code-talk
-  labels:
-    app: code-talk
+  namespace: default
   annotations:
-    # Cert-manager for SSL/TLS
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    # Nginx ingress annotations
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    nginx.ingress.kubernetes.io/rate-limit: "100"
-    # WebSocket support for GraphQL subscriptions
-    nginx.ingress.kubernetes.io/websocket-services: "code-talk-server"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
 spec:
-  ingressClassName: nginx
-  tls:
-  - hosts:
-    - yourdomain.com
-    - www.yourdomain.com
-    secretName: code-talk-tls
+  ingressClassName: traefik
   rules:
-  - host: yourdomain.com
+  - host: code-talk-k8s.el-jefe.me
     http:
       paths:
-      # GraphQL API endpoint (HTTP & WebSocket)
       - path: /graphql
         pathType: Prefix
         backend:
@@ -36,46 +18,24 @@ spec:
             name: code-talk-server
             port:
               number: 8000
-      # API health check
-      - path: /health
+      - path: /api
         pathType: Prefix
         backend:
           service:
             name: code-talk-server
             port:
               number: 8000
-      # Client (catch-all)
+      - path: /socket.io
+        pathType: Prefix
+        backend:
+          service:
+            name: code-talk-server
+            port:
+              number: 8000
       - path: /
         pathType: Prefix
         backend:
           service:
             name: code-talk-client
             port:
-              number: 80
-  - host: www.yourdomain.com
-    http:
-      paths:
-      # GraphQL API endpoint (HTTP & WebSocket)
-      - path: /graphql
-        pathType: Prefix
-        backend:
-          service:
-            name: code-talk-server
-            port:
-              number: 8000
-      # API health check
-      - path: /health
-        pathType: Prefix
-        backend:
-          service:
-            name: code-talk-server
-            port:
-              number: 8000
-      # Client (catch-all)
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: code-talk-client
-            port:
-              number: 80
+              number: 5000

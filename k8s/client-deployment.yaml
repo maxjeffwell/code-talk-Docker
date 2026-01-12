@@ -2,12 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: code-talk-client
-  namespace: code-talk
+  namespace: default
   labels:
     app: code-talk
     component: client
+    portfolio: "true"
+    tier: frontend
+  annotations:
+    keel.sh/policy: force
+    keel.sh/pollSchedule: '@every 5m'
+    keel.sh/trigger: poll
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: code-talk
@@ -17,78 +23,40 @@ spec:
       labels:
         app: code-talk
         component: client
+        portfolio: "true"
+        tier: frontend
     spec:
+      imagePullSecrets:
+      - name: dockerhub-credentials
       containers:
-      - name: client
+      - name: code-talk-client
         image: maxjeffwell/code-talk-graphql-client:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
           name: http
           protocol: TCP
-        env:
-        # Environment from ConfigMap
-        - name: NODE_ENV
-          valueFrom:
-            configMapKeyRef:
-              name: code-talk-config
-              key: NODE_ENV
-        - name: REACT_APP_GRAPHQL_HTTP_URI
-          valueFrom:
-            configMapKeyRef:
-              name: code-talk-config
-              key: REACT_APP_GRAPHQL_HTTP_URI
-        - name: REACT_APP_GRAPHQL_WS_URI
-          valueFrom:
-            configMapKeyRef:
-              name: code-talk-config
-              key: REACT_APP_GRAPHQL_WS_URI
-
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            cpu: 10m
+            memory: 64Mi
           limits:
-            memory: "256Mi"
-            cpu: "200m"
-
+            cpu: 250m
+            memory: 256Mi
         livenessProbe:
           httpGet:
             path: /
             port: 5000
-          initialDelaySeconds: 20
+          initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
-
         readinessProbe:
           httpGet:
             path: /
             port: 5000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 3
-
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 1001
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          readOnlyRootFilesystem: true
-
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: cache
-          mountPath: /.npm
-
-      volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: cache
-        emptyDir: {}
-
       restartPolicy: Always

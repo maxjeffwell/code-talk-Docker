@@ -2,10 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: code-talk-client
-  namespace: code-talk
+  namespace: default
   labels:
     app: code-talk
     component: client
+    tier: frontend
 spec:
   type: ClusterIP
   selector:
@@ -13,7 +14,6 @@ spec:
     component: client
   ports:
   - name: http
-    port: 80
+    port: 5000
     targetPort: 5000
     protocol: TCP
-  sessionAffinity: None

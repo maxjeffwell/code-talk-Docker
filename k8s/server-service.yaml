@@ -2,10 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: code-talk-server
-  namespace: code-talk
+  namespace: default
   labels:
     app: code-talk
     component: server
+    tier: backend
 spec:
   type: ClusterIP
   selector:
@@ -16,4 +17,3 @@ spec:
     port: 8000
     targetPort: 8000
     protocol: TCP
-  sessionAffinity: None

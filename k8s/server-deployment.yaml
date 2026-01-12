@@ -2,12 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: code-talk-server
-  namespace: code-talk
+  namespace: default
   labels:
     app: code-talk
     component: server
+    portfolio: "true"
+    tier: backend
+  annotations:
+    keel.sh/policy: force
+    keel.sh/pollSchedule: '@every 5m'
+    keel.sh/trigger: poll
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: code-talk
@@ -17,114 +23,61 @@ spec:
       labels:
         app: code-talk
         component: server
+        portfolio: "true"
+        tier: backend
     spec:
+      imagePullSecrets:
+      - name: dockerhub-credentials
       containers:
-      - name: server
+      - name: code-talk-server
         image: maxjeffwell/code-talk-graphql-server:latest
         imagePullPolicy: Always
+        command: ["npm", "start"]
         ports:
         - containerPort: 8000
           name: http
           protocol: TCP
         env:
-        # Environment from ConfigMap
         - name: NODE_ENV
-          valueFrom:
-            configMapKeyRef:
-              name: code-talk-config
-              key: NODE_ENV
+          value: production
         - name: PORT
-          valueFrom:
-            configMapKeyRef:
-              name: code-talk-config
-              key: PORT
-        - name: ALLOWED_ORIGINS
-          valueFrom:
-            configMapKeyRef:
-              name: code-talk-config
-              key: ALLOWED_ORIGINS
-
-        # Secrets
+          value: "8000"
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: code-talk-secrets
-              key: DATABASE_URL
-        - name: JWT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: code-talk-secrets
-              key: JWT_SECRET
+              name: code-talk-secret
+              key: database-url
         - name: REDIS_URL
           valueFrom:
             secretKeyRef:
-              name: code-talk-secrets
-              key: REDIS_URL
-              optional: true
-        - name: REDIS_HOST
+              name: code-talk-secret
+              key: redis-url
+        - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
-              name: code-talk-secrets
-              key: REDIS_HOST
-              optional: true
-        - name: REDIS_PORT
-          valueFrom:
-            secretKeyRef:
-              name: code-talk-secrets
-              key: REDIS_PORT
-              optional: true
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: code-talk-secrets
-              key: REDIS_PASSWORD
-              optional: true
-
+              name: code-talk-secret
+              key: jwt-secret
+        - name: AI_GATEWAY_URL
+          value: http://shared-ai-gateway-service:8002
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "250m"
+            cpu: 10m
+            memory: 128Mi
           limits:
-            memory: "512Mi"
-            cpu: "500m"
-
+            cpu: 500m
+            memory: 512Mi
         livenessProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 8000
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
-
         readinessProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 8000
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 3
-
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 1001
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          readOnlyRootFilesystem: true
-
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: logs
-          mountPath: /app/logs
-
-      volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: logs
-        emptyDir: {}
-
       restartPolicy: Always
