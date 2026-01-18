@@ -1,0 +1,22 @@
+name: Trigger K8s Deploy
+
+on:
+  push:
+    branches: [master, main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/**'
+      - 'LICENSE'
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deployment
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DEPLOY_PAT }}
+          repository: maxjeffwell/devops-portfolio-manager
+          event-type: deploy-code-talk
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
