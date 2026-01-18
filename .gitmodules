@@ -1,0 +1,6 @@
+[submodule "code-talk-graphql-client"]
+	path = code-talk-graphql-client
+	url = https://github.com/maxjeffwell/code-talk-graphql-client.git
+[submodule "code-talk-graphql-server"]
+	path = code-talk-graphql-server
+	url = https://github.com/maxjeffwell/code-talk-graphql-server.git
