@@ -57,6 +57,13 @@ spec:
             secretKeyRef:
               name: code-talk-secret
               key: jwt-secret
+        - name: JWT_REFRESH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: code-talk-secret
+              key: jwt-refresh-secret
+        - name: ALLOWED_ORIGINS
+          value: https://code-talk-k8s.el-jefe.me
         - name: AI_GATEWAY_URL
           value: http://shared-ai-gateway-service:8002
         resources:
