@@ -46,22 +46,22 @@ spec:
           valueFrom:
             secretKeyRef:
               name: code-talk-secret
-              key: database-url
+              key: DATABASE_URL
         - name: REDIS_URL
           valueFrom:
             secretKeyRef:
               name: code-talk-secret
-              key: redis-url
+              key: REDIS_URL
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: code-talk-secret
-              key: jwt-secret
+              key: JWT_SECRET
         - name: JWT_REFRESH_SECRET
           valueFrom:
             secretKeyRef:
               name: code-talk-secret
-              key: jwt-refresh-secret
+              key: JWT_REFRESH_SECRET
         - name: ALLOWED_ORIGINS
           value: https://code-talk-k8s.el-jefe.me
         - name: AI_GATEWAY_URL
@@ -71,13 +71,13 @@ spec:
           valueFrom:
             secretKeyRef:
               name: code-talk-secret
-              key: upstash-redis-rest-url
+              key: UPSTASH_REDIS_REST_URL
               optional: true
         - name: UPSTASH_REDIS_REST_TOKEN
           valueFrom:
             secretKeyRef:
               name: code-talk-secret
-              key: upstash-redis-rest-token
+              key: UPSTASH_REDIS_REST_TOKEN
               optional: true
         resources:
           requests:
