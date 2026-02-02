@@ -66,6 +66,19 @@ spec:
           value: https://code-talk-k8s.el-jefe.me
         - name: AI_GATEWAY_URL
           value: http://shared-ai-gateway-service:8002
+        # Upstash Redis for distributed rate limiting (optional)
+        - name: UPSTASH_REDIS_REST_URL
+          valueFrom:
+            secretKeyRef:
+              name: code-talk-secret
+              key: upstash-redis-rest-url
+              optional: true
+        - name: UPSTASH_REDIS_REST_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: code-talk-secret
+              key: upstash-redis-rest-token
+              optional: true
         resources:
           requests:
             cpu: 10m
