@@ -80,18 +80,15 @@ See [DOCKER.md](./DOCKER.md) for detailed Docker deployment instructions.
 
 ## Deployment
 
-### Current Deployments
+### Production (Kubernetes)
 
-- **Production Server**: https://code-talk-server-5f982138903e.herokuapp.com
-- **Production Client**: https://code-talk-client-c46118c24c30.herokuapp.com
+The application runs on a self-hosted **K3s cluster** managed via ArgoCD GitOps:
 
-Both applications are currently deployed on Heroku.
-
-### Deployment Options
-
-1. **Heroku** (Current): Uses buildpacks, separate deployments for client and server
-2. **Docker** (New): Containerized deployment with docker-compose
-3. **Kubernetes** (Planned): Future deployment to Kubernetes clusters
+- **Live:** [code-talk.el-jefe.me](https://code-talk.el-jefe.me)
+- **Ingress:** Traefik with automatic TLS via cert-manager + Let's Encrypt
+- **Secrets:** Doppler + External Secrets Operator
+- **CI/CD:** GitHub Actions → Docker Hub → ArgoCD auto-sync
+- **Helm:** Deployed via shared `portfolio-common` library chart
 
 ## Project Structure
 
