@@ -69,3 +69,6 @@ pids/
 .yarn/cache
 .yarn/unplugged
 .yarn/install-state.gz
+
+# Serena MCP server tool state (per-developer; not shared)
+.serena/
